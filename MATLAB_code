@@ -1,0 +1,59 @@
+% Universal constants
+k = 1.380e-23;
+k_ev = 8.617e-5;
+q = 1.602e-19;
+eo = 8.854e-14;
+Ph2 = 0.5;
+
+% MOSFET-related parameters
+Ni = 1.5e10;
+Eg = 1.11;
+Na = 5e15;
+Qi = 4e10 * q;
+Kox = 3.9;
+Ksi = 11.8;
+tox = 10000e-10;
+phi_mso = -0.95;
+Ci = (Kox*eo)/tox;
+
+% Temperatures
+T1 = 27 + 273.15;
+T2 = 127 + 273.15;
+
+% Calculation of new intrinsic concentration at the specified temperatures
+A = Ni * (300^(-3/2)) * exp(Eg/(2 * k_ev * 300));
+Ni1 = A * T1^(3/2) * exp(-Eg/(2 * k_ev * T1));
+Ni2 = A * T2^(3/2) * exp(-Eg/(2 * k_ev * T2));
+phi_f1 = ((k*T1)/q) * log(Na/Ni1);
+phi_f2 = ((k*T2)/q) * log(Na/Ni2);
+
+Wm1 = 2*sqrt((Ksi * eo * phi_f1) / (q * Na));
+Wm2 = 2*sqrt((Ksi * eo * phi_f2) / (q * Na));
+
+Qd1 = -q*Na*Wm1;
+Qd2 = -q*Na*Wm2;
+
+% Calculation of initial constant
+iniC1 = phi_mso + ((k*T1) / (2*q))*log(Ph2);
+iniC2 = phi_mso + ((k*T2) / (2*q))*log(Ph2);
+
+% Plot generation
+Ph2_range = 0.1:0.01:1;
+phi_ms1 = iniC1 - ((k*T1) / (2*q))*log(Ph2_range);
+phi_ms2 = iniC2 - ((k*T2) / (2*q))*log(Ph2_range);
+
+Vth1 = phi_ms1 - (Qi/Ci) - (Qd1/Ci) + 2*phi_f1;
+Vth2 = phi_ms2 - (Qi/Ci) - (Qd2/Ci) + 2*phi_f2;
+
+figure(1);
+plot(Ph2_range, Vth1, 'b', Ph2_range, Vth2, 'r');
+title("Variation in threshold voltage of FET");
+xlabel("Partial Pressure of Hydrogen gas in atm");
+ylabel("Threshold Voltage");
+legend({string(T1) + ' K', string(T2) + ' K'}, 'Location', 'northeast');
+
+figure(2);
+plot(Ph2_range, Vth2 - Vth1);
+title("Variation in difference between the threshold voltages (Vth2 - Vth1)");
+xlabel("Partial Pressure of Hydrogen gas in atm");
+ylabel("Difference Between the Threshold Voltages");
